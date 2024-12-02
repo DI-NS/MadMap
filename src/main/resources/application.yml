@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/authdb
+    driver-class-name: org.postgresql.Driver
+    username: auth_user
+    password: auth_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  liquibase:
+    enabled: false
+
+jwt:
+  secret: "cR5fujXVsWhWH9q+S85Fes4nw2K2zKPO74pMhduhyyffY1Zruqkx8sW+HiR1fL1Vp6jlaaO/t5eSKw2BV0irEw"
+  expiration: 3600
