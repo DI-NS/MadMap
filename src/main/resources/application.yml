@@ -15,5 +15,5 @@ spring:
     enabled: false
 
 jwt:
-  secret: "cR5fujXVsWhWH9q+S85Fes4nw2K2zKPO74pMhduhyyffY1Zruqkx8sW+HiR1fL1Vp6jlaaO/t5eSKw2BV0irEw"
+  secret: "7qF0Yq6IBvKOcsmQI7PYZfCXlL50zi2vV9514w9CkBW5dWZx2oxDZqM2m98SiDH1h5ZfUvjyDtg2r7c12POPSg"
   expiration: 3600

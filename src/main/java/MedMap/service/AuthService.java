@@ -3,9 +3,8 @@ package MedMap.service;
 import MedMap.model.User;
 import MedMap.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -14,33 +13,21 @@ import java.util.Date;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final String jwtSecret = "7qF0Yq6IBvKOcsmQI7PYZfCXlL50zi2vV9514w9CkBW5dWZx2oxDZqM2m98SiDH1h5ZfUvjyDtg2r7c12POPSg"; // Substitua pelo seu Base64 Secret
+    private final long jwtExpiration = 3600L * 1000; // 1 hora em milissegundos
 
-    @Value("${jwt.expiration}")
-    private int jwtExpiration;
-
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public String register(User user) {
-        // Validações adicionais para evitar salvar dados incompletos
-        if (user.getNomeUbs() == null || user.getNomeUbs().isBlank()) {
-            throw new RuntimeException("O nome da UBS é obrigatório.");
-        }
-        if (user.getCnes() == null || user.getCnes().isBlank()) {
-            throw new RuntimeException("O CNES é obrigatório.");
-        }
-        if (user.getAddress() == null || user.getAddress().isBlank()) {
-            throw new RuntimeException("O endereço é obrigatório.");
-        }
-
         if (userRepository.findByNomeUbsAndCnes(user.getNomeUbs(), user.getCnes()).isPresent()) {
             throw new RuntimeException("A UBS com esse nome e CNES já está registrada.");
         }
-
+        user.setAddress(passwordEncoder.encode(user.getAddress()));
         userRepository.save(user);
         return "UBS registrada com sucesso!";
     }
@@ -53,15 +40,15 @@ public class AuthService {
     }
 
     private String generateToken(User user) {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret); // Decodifica a chave Base64
-        var secretKey = Keys.hmacShaKeyFor(keyBytes); // Gera a chave para HS512
+        byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
+        var secretKey = Keys.hmacShaKeyFor(keyBytes);
 
         return Jwts.builder()
                 .setSubject(user.getNomeUbs())
                 .claim("cnes", user.getCnes())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration * 1000L))
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(secretKey)
                 .compact();
     }
 }
