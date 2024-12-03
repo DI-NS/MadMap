@@ -1,6 +1,5 @@
 server:
   port: 8081
-
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/authdb
@@ -13,7 +12,12 @@ spring:
     show-sql: true
   liquibase:
     enabled: false
-
+    spring:
+      application:
+        name: MedMap
+    springdoc:
+      swagger-ui:
+        enabled: true
 jwt:
-  secret: "7qF0Yq6IBvKOcsmQI7PYZfCXlL50zi2vV9514w9CkBW5dWZx2oxDZqM2m98SiDH1h5ZfUvjyDtg2r7c12POPSg"
+  secret: u2t388f+jNwBevb8rAZvVBoF3pat4IxP/h1ylXv/av7FHEZ+udrdF6oz57N9T1BAYTeqztPxrpuUmHYgU6pDnw==
   expiration: 3600
