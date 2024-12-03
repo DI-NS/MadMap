@@ -2,22 +2,19 @@ server:
   port: 8081
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/authdb
-    driver-class-name: org.postgresql.Driver
-    username: auth_user
-    password: auth_password
+    url:
+    driver-class-name:
+    username:
+    password:
+    initialization-mode: always
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
   liquibase:
     enabled: false
-    spring:
-      application:
-        name: MedMap
-    springdoc:
-      swagger-ui:
-        enabled: true
 jwt:
-  secret: u2t388f+jNwBevb8rAZvVBoF3pat4IxP/h1ylXv/av7FHEZ+udrdF6oz57N9T1BAYTeqztPxrpuUmHYgU6pDnw==
+  secret: ""
   expiration: 3600

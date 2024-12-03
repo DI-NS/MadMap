@@ -33,7 +33,8 @@ public class AuthService {
         if (userRepository.findByNomeUbsAndCnes(user.getNomeUbs(), user.getCnes()).isPresent()) {
             throw new RuntimeException("A UBS com esse nome e CNES já está registrada.");
         }
-        user.setAddress(passwordEncoder.encode(user.getAddress()));
+        // Salva o endereço diretamente sem codificação
+        user.setAddress(user.getAddress());
         userRepository.save(user);
         return "UBS registrada com sucesso!";
     }
