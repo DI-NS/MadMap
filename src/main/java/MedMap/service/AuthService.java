@@ -7,7 +7,6 @@ import MedMap.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class AuthService {
     private final UserRepository userRepository;
@@ -21,10 +20,9 @@ public class AuthService {
     }
 
     public String register(User user) {
-        if (userRepository.findByNomeUbsAndCnes(user.getNomeUbs(), user.getCnes()).isPresent()) {
-            throw new UserAlreadyExistsException("A UBS com esse nome e CNES já está registrada.");
+        if (userRepository.findByCnes(user.getCnes()).isPresent()) {
+            throw new UserAlreadyExistsException("Uma UBS com esse CNES já está registrada.");
         }
-        user.setAddress(user.getAddress());
         userRepository.save(user);
         return "UBS registrada com sucesso!";
     }
