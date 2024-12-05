@@ -6,13 +6,15 @@ import jakarta.validation.constraints.NotBlank;
 
 /**
  * Representa uma UBS (Unidade Básica de Saúde) no sistema MedMap.
+ * CNES funciona como um identificador público (username).
+ * A senha será armazenada de forma hasheada em hashedPassword.
  */
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @JsonIgnore
+    @JsonIgnore // O ID não é relevante para o usuário
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -24,18 +26,26 @@ public class User {
     private String nomeUbs;
 
     /**
-     * Código CNES da UBS em texto puro.
+     * Código CNES da UBS (identificador público).
      */
     @Column(name = "cnes", nullable = false, unique = true)
     @NotBlank(message = "O CNES é obrigatório")
     private String cnes;
 
     /**
-     * CNES criptografado para autenticação.
+     * Senha em texto puro não será armazenada no banco.
+     * Será utilizada apenas para receber o valor na requisição.
      */
-    @JsonIgnore
-    @Column(name = "hashed_cnes", nullable = false)
-    private String hashedCnes;
+    @Transient
+    @NotBlank(message = "A senha é obrigatória")
+    private String password;
+
+    /**
+     * Senha hasheada, armazenada de forma segura no banco.
+     */
+    @JsonIgnore // Não expor o hash da senha.
+    @Column(name = "hashed_password", nullable = false)
+    private String hashedPassword;
 
     /**
      * Endereço da UBS.
@@ -44,16 +54,18 @@ public class User {
     @NotBlank(message = "O endereço é obrigatório")
     private String address;
 
-    // Construtores, getters e setters
+    // Construtores
     public User() {
     }
 
-    public User(String nomeUbs, String cnes, String address) {
+    public User(String nomeUbs, String cnes, String address, String password) {
         this.nomeUbs = nomeUbs;
         this.cnes = cnes;
         this.address = address;
+        this.password = password;
     }
 
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -74,12 +86,20 @@ public class User {
         this.cnes = cnes;
     }
 
-    public String getHashedCnes() {
-        return hashedCnes;
+    public String getPassword() {
+        return password;
     }
 
-    public void setHashedCnes(String hashedCnes) {
-        this.hashedCnes = hashedCnes;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
+    }
+
+    public void setHashedPassword(String hashedPassword) {
+        this.hashedPassword = hashedPassword;
     }
 
     public String getAddress() {
@@ -89,4 +109,5 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
+
 }

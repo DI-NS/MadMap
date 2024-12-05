@@ -11,6 +11,7 @@ import java.util.Date;
 
 /**
  * Serviço responsável por gerar tokens JWT.
+ * Inclui nomeUbs e cnes como Claims no token.
  */
 @Service
 public class TokenService {
@@ -27,7 +28,7 @@ public class TokenService {
      * Gera um token JWT para a UBS autenticada.
      *
      * @param user Dados da UBS.
-     * @return Token JWT.
+     * @return Token JWT contendo cnes e nomeUbs.
      */
     public String generateToken(User user) {
         String jwtSecret = jwtSecretProvider.getJwtSecret();
@@ -35,8 +36,8 @@ public class TokenService {
         var secretKey = Keys.hmacShaKeyFor(keyBytes);
 
         return Jwts.builder()
-                .setSubject(user.getCnes())
-                .claim("nomeUbs", user.getNomeUbs())
+                .setSubject(user.getCnes()) // CNES como subject
+                .claim("nomeUbs", user.getNomeUbs()) // adicionar nomeUbs no token
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(secretKey)

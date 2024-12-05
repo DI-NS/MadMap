@@ -11,14 +11,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
-     * Busca uma UBS pelo nome.
-     *
-     * @param nomeUbs Nome da UBS.
-     * @return Optional contendo a UBS, se encontrada.
-     */
-    Optional<User> findByNomeUbs(String nomeUbs);
-
-    /**
      * Busca uma UBS pelo CNES.
      *
      * @param cnes Código CNES da UBS.

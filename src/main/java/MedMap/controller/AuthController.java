@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Controlador responsável pelas rotas de autenticação.
+ * - Registro: Recebe nomeUbs, cnes, address e password.
+ * - Login: Recebe cnes e password.
  */
 @RestController
 @RequestMapping("/auth")
@@ -22,7 +24,7 @@ public class AuthController {
     /**
      * Endpoint para registrar uma nova UBS.
      *
-     * @param user Dados da UBS.
+     * @param user Dados da UBS (nomeUbs, cnes, address, password).
      * @return Mensagem de sucesso.
      */
     @PostMapping("/register")
@@ -32,14 +34,15 @@ public class AuthController {
     }
 
     /**
-     * Endpoint para autenticar uma UBS pelo CNES.
+     * Endpoint para autenticar uma UBS pelo CNES e senha.
      *
-     * @param cnes Código CNES da UBS.
+     * @param cnes     Código CNES da UBS.
+     * @param password Senha da UBS.
      * @return Token JWT se a autenticação for bem-sucedida.
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String nomeUbs, @RequestParam String cnes) {
-        String token = authService.login(nomeUbs, cnes);
+    public ResponseEntity<String> login(@RequestParam String cnes, @RequestParam String password) {
+        String token = authService.login(cnes, password);
         return ResponseEntity.ok(token);
     }
 }
