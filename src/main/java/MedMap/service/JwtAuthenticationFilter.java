@@ -7,19 +7,21 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import java.util.Base64;
+
 import java.io.IOException;
+import java.util.Base64;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final String jwtSecret;
+    private final JwtSecretProvider jwtSecretProvider;
 
-    public JwtAuthenticationFilter(@Value("${jwt.secret}") String jwtSecret) {
-        this.jwtSecret = jwtSecret;
+    public JwtAuthenticationFilter(JwtSecretProvider jwtSecretProvider) {
+        this.jwtSecretProvider = jwtSecretProvider;
     }
 
     @Override
@@ -30,15 +32,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
             try {
-                byte[] keyBytes = Base64.getDecoder().decode(jwtSecret.replace("\"", "")); // Remove aspas antes de decodificar
+                String jwtSecret = jwtSecretProvider.getJwtSecret();
+                byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(Keys.hmacShaKeyFor(keyBytes))
                         .build()
                         .parseClaimsJws(jwt)
                         .getBody();
-                request.setAttribute("claims", claims);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(claims.getSubject(), null, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid or expired JWT token");
                 return;
             }
         }

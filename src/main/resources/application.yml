@@ -1,11 +1,12 @@
 server:
   port: 8081
+
 spring:
   datasource:
-    url:
-    driver-class-name:
-    username:
-    password:
+    url: jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:6543/postgres
+    driver-class-name: org.postgresql.Driver
+    username: postgres.kcznmlsdphaxfxotjits
+    password: Madmap@@021
     initialization-mode: always
   jpa:
     hibernate:
@@ -15,6 +16,7 @@ spring:
     show-sql: true
   liquibase:
     enabled: false
+
 jwt:
-  secret: ""
   expiration: 3600
+
