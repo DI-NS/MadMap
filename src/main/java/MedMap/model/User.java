@@ -4,33 +4,58 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * Representa uma UBS (Unidade Básica de Saúde) no sistema MedMap.
+ */
 @Entity
 @Table(name = "users")
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome_ubs", nullable = false) // Banco exige valor
-    @NotBlank(message = "O nome da UBS é obrigatório") // Validação no backend
+    /**
+     * Nome da UBS.
+     */
+    @Column(name = "nome_ubs", nullable = false)
+    @NotBlank(message = "O nome da UBS é obrigatório")
     private String nomeUbs;
 
-    @Column(nullable = false) // Banco exige valor
-    @NotBlank(message = "O CNES é obrigatório") // Validação no backend
+    /**
+     * Código CNES da UBS em texto puro.
+     */
+    @Column(name = "cnes", nullable = false, unique = true)
+    @NotBlank(message = "O CNES é obrigatório")
     private String cnes;
 
-    @Column(nullable = false) // Banco exige valor
-    @NotBlank(message = "O endereço é obrigatório") // Validação no backend
+    /**
+     * CNES criptografado para autenticação.
+     */
+    @JsonIgnore
+    @Column(name = "hashed_cnes", nullable = false)
+    private String hashedCnes;
+
+    /**
+     * Endereço da UBS.
+     */
+    @Column(nullable = false)
+    @NotBlank(message = "O endereço é obrigatório")
     private String address;
 
-    // Getters e Setters
-    public Long getId() {
-        return id;
+    // Construtores, getters e setters
+    public User() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public User(String nomeUbs, String cnes, String address) {
+        this.nomeUbs = nomeUbs;
+        this.cnes = cnes;
+        this.address = address;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getNomeUbs() {
@@ -47,6 +72,14 @@ public class User {
 
     public void setCnes(String cnes) {
         this.cnes = cnes;
+    }
+
+    public String getHashedCnes() {
+        return hashedCnes;
+    }
+
+    public void setHashedCnes(String hashedCnes) {
+        this.hashedCnes = hashedCnes;
     }
 
     public String getAddress() {

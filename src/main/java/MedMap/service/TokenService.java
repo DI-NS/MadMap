@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.Base64;
 import java.util.Date;
 
+/**
+ * Serviço responsável por gerar tokens JWT.
+ */
 @Service
 public class TokenService {
 
@@ -20,14 +23,20 @@ public class TokenService {
         this.jwtExpiration = jwtExpiration;
     }
 
+    /**
+     * Gera um token JWT para a UBS autenticada.
+     *
+     * @param user Dados da UBS.
+     * @return Token JWT.
+     */
     public String generateToken(User user) {
         String jwtSecret = jwtSecretProvider.getJwtSecret();
         byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
         var secretKey = Keys.hmacShaKeyFor(keyBytes);
 
         return Jwts.builder()
-                .setSubject(user.getNomeUbs())
-                .claim("cnes", user.getCnes())
+                .setSubject(user.getCnes())
+                .claim("nomeUbs", user.getNomeUbs())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(secretKey)

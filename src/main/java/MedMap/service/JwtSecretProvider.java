@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Base64;
 
+/**
+ * Provedor do segredo usado para assinar tokens JWT.
+ */
 @Component
 public class JwtSecretProvider {
 
@@ -13,14 +16,20 @@ public class JwtSecretProvider {
 
     public JwtSecretProvider(@Value("${jwt.secret:}") String jwtSecretEnv) {
         if (jwtSecretEnv == null || jwtSecretEnv.isBlank()) {
-            // Gera uma nova chave se não estiver configurada em variáveis de ambiente
-            this.jwtSecret = Base64.getEncoder().encodeToString(Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS512).getEncoded());
+            // Gera uma nova chave se não estiver configurada
+            this.jwtSecret = Base64.getEncoder()
+                    .encodeToString(Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS512).getEncoded());
         } else {
-            // Usa a chave definida como variável de ambiente
+            // Usa a chave definida nas configurações
             this.jwtSecret = jwtSecretEnv;
         }
     }
 
+    /**
+     * Retorna o segredo JWT.
+     *
+     * @return Segredo codificado em Base64.
+     */
     public String getJwtSecret() {
         return jwtSecret;
     }
