@@ -5,214 +5,316 @@ A **MedMap API** é uma aplicação Spring Boot que implementa autenticação e 
 
 ---
 
-## Estrutura do Projeto
+## Sumário
 
-```plaintext
+- [Visão Geral do Projeto](#visão-geral-do-projeto)
+- [Árvore de Diretórios](#árvore-de-diretórios)
+- [Descrição dos Arquivos](#descrição-dos-arquivos)
+  - [Configurações (config/)](#configurações-config)
+  - [Controlador (controller/)](#controlador-controller)
+  - [Exceções (exception/)](#exceções-exception)
+  - [Modelo (model/)](#modelo-model)
+  - [Repositório (repository/)](#repositório-repository)
+  - [Serviços (service/)](#serviços-service)
+  - [Classe Principal (MedMapApplication.java)](#classe-principal-medmapapplicationjava)
+  - [Recursos de Configuração (resources/)](#recursos-de-configuração-resources)
+  - [Testes (test/)](#testes-test)
+- [Testes e Cobertura de Código](#testes-e-cobertura-de-código)
+- [Documentação da API com Swagger/OpenAPI](#documentação-da-api-com-swaggeropenapi)
+- [Autenticação e Segurança JWT](#autenticação-e-segurança-jwt)
+- [CI/CD com GitHub Actions](#cicd-com-github-actions)
+- [Boas Práticas, SOLID e Clean Code](#boas-práticas-solid-e-clean-code)
+- [Detalhes Adicionais e Considerações](#detalhes-adicionais-e-considerações)
+  - [Fluxo de Autenticação](#fluxo-de-autenticação)
+  - [Propriedades de Configuração](#propriedades-de-configuração)
+  - [Integração com Outros Microserviços](#integração-com-outros-microserviços)
+  - [CI/CD](#cicd)
+  - [Métricas e Monitoramento](#métricas-e-monitoramento)
+  - [Boas Práticas](#boas-práticas-1)
+  - [Exemplos de Rotas Disponíveis](#exemplos-de-rotas-disponíveis)
+
+---
+
+## Visão Geral do Projeto
+
+O microserviço **MedMap** é responsável por autenticação e registro de UBS (Unidades Básicas de Saúde), fornecendo rotas para registrar novas UBS, realizar login, proteger rotas sensíveis via JWT e documentar a API via Swagger. A aplicação está preparada para uso com PostgreSQL (ou Supabase) em produção e H2 em testes, além de possuir pipeline CI/CD e testes unitários com alta cobertura.
+
+**Principais Tecnologias:**
+
+| Tecnologia       | Uso                                |
+|------------------|-------------------------------------|
+| Java 17          | Linguagem principal                 |
+| Spring Boot      | Framework principal                 |
+| Spring Security  | Segurança e Autenticação JWT       |
+| JUnit, Mockito   | Testes unitários                   |
+| Swagger/OpenAPI  | Documentação da API                |
+| Maven            | Gerenciamento de dependências       |
+| GitHub Actions   | CI/CD Pipeline                      |
+
+---
+
+## Árvore de Diretórios
+
+```bash
 MedMap/
 ├── src/
 │   ├── main/
 │   │   ├── java/
 │   │   │   ├── MedMap/
 │   │   │   │   ├── config/
-│   │   │   │   │   ├── OpenApiConfig.java       # Configuração do Swagger/OpenAPI
-│   │   │   │   │   └── SecurityConfig.java      # Configuração de segurança com Spring Security
+│   │   │   │   │   ├── OpenApiConfig.java
+│   │   │   │   │   └── SecurityConfig.java
 │   │   │   │   ├── controller/
-│   │   │   │   │   └── AuthController.java      # Endpoints de autenticação (registro/login)
+│   │   │   │   │   └── AuthController.java
+│   │   │   │   ├── exception/
+│   │   │   │   │   ├── GlobalExceptionHandler.java
+│   │   │   │   │   ├── InvalidCredentialsException.java
+│   │   │   │   │   └── UserAlreadyExistsException.java
 │   │   │   │   ├── model/
-│   │   │   │   │   └── User.java                # Representação da entidade "User"
+│   │   │   │   │   └── User.java
 │   │   │   │   ├── repository/
-│   │   │   │   │   ├── GenerateSecretKey.java   # Classe para gerar a chave JWT (HS512)
-│   │   │   │   │   └── UserRepository.java      # Interface para interação com o banco
+│   │   │   │   │   └── UserRepository.java
 │   │   │   │   ├── service/
-│   │   │   │   │   ├── AuthService.java         # Lógica de autenticação/geração de tokens
-│   │   │   │   │   ├── JwtAuthenticationFilter.java # Filtro JWT para autenticar requisições
-│   │   │   │   │   └── GlobalExceptionHandler.java # Tratamento global de exceções
-│   │   │   │   └── MedMapApplication.java       # Classe principal do projeto
+│   │   │   │   │   ├── AuthService.java
+│   │   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   │   ├── JwtSecretProvider.java
+│   │   │   │   │   └── TokenService.java
+│   │   │   │   └── MedMapApplication.java
 │   │   ├── resources/
-│   │   │   ├── application.properties           # Configurações gerais do projeto
-│   │   │   └── application.yml                  # Configurações específicas do JWT
-├── test/                                        # Testes (diretório reservado)
-├── target/                                      # Diretório gerado pela build
-├── .gitignore                                   # Arquivo Git ignore
-├── pom.xml                                      # Configuração Maven
-└── README.md                                    # Documentação
+│   │   │   ├── application.yml
+│   ├── test/
+│   │   ├── java/
+│   │   │   ├── MedMap/
+│   │   │   │   ├── MedMapApplicationMainTest.java
+│   │   │   │   ├── config/
+│   │   │   │   │   ├── ConfigTest.java
+│   │   │   │   │   └── OpenApiConfigTest.java
+│   │   │   │   ├── controller/
+│   │   │   │   │   └── AuthControllerTest.java
+│   │   │   │   ├── exception/
+│   │   │   │   │   ├── GlobalExceptionHandlerTest.java
+│   │   │   │   │   └── JwtAuthenticationFilterTest.java
+│   │   │   │   ├── model/
+│   │   │   │   │   └── UserTest.java
+│   │   │   │   ├── repository/
+│   │   │   │   │   └── UserRepositoryTest.java
+│   │   │   │   ├── service/
+│   │   │   │   │   ├── AuthServiceTest.java
+│   │   │   │   │   ├── JwtSecretProviderTest.java
+│   │   │   │   │   └── TokenServiceTest.java
+│   │   ├── resources/
+│   │   │   └── application-test.properties
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+└── pom.xml
 ```
 
 ---
 
-## Configurações
+## Descrição dos Arquivos
 
-### `application.yml`
+### Configurações (config/)
 
-Configuração de segurança e autenticação JWT.
+| Arquivo              | Descrição                                                                    |
+|----------------------|--------------------------------------------------------------------------------|
+| OpenApiConfig.java   | Configura o Swagger/OpenAPI, definindo o título, descrição e versão da API.    |
+| SecurityConfig.java  | Configura o Spring Security, definindo endpoints públicos e protegidos com JWT. |
 
-```yaml
-server:
-  port: 8080
+### Controlador (controller/)
 
-jwt:
-  secret: "7qF0Yq6IBvKOcsmQI7PYZfCXlL50zi2vV9514w9CkBW5dWZx2oxDZqM2m98SiDH1h5ZfUvjyDtg2r7c12POPSg" # Substitua por sua chave secreta gerada
-  expiration: 3600 # Expiração do token em segundos
-```
+| Arquivo             | Descrição                                                                 |
+|---------------------|---------------------------------------------------------------------------|
+| AuthController.java | Controlador REST responsável pelas rotas de autenticação /auth/register e /auth/login. |
 
----
+### Exceções (exception/)
 
-## Configurações e Explicações por Arquivo
+| Arquivo                       | Descrição                                                                             |
+|--------------------------------|-----------------------------------------------------------------------------------------|
+| GlobalExceptionHandler.java    | Tratador global de exceções. Captura exceções personalizadas e retorna códigos HTTP adequados. |
+| InvalidCredentialsException.java | Exceção lançada quando as credenciais fornecidas no login são inválidas.               |
+| UserAlreadyExistsException.java | Exceção lançada quando se tenta registrar uma UBS já existente (mesmo CNES).             |
 
-### Configurações
+### Modelo (model/)
 
-- **`OpenApiConfig.java`**
-  - Configura a documentação Swagger para a API.
-  - Acessível em: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+| Arquivo    | Descrição                                                      |
+|------------|----------------------------------------------------------------|
+| User.java  | Entidade que representa a UBS, com campos nomeUbs, cnes, address, hashedPassword. |
 
-- **`SecurityConfig.java`**
-  - Configuração do Spring Security para gerenciar autenticação e autorização.
-  - Filtro JWT adicionado para validar tokens em todas as requisições.
+### Repositório (repository/)
 
-### Controladores
+| Arquivo            | Descrição                                                        |
+|--------------------|------------------------------------------------------------------|
+| UserRepository.java | Interface do Spring Data JPA para interagir com a entidade User. |
 
-- **`AuthController.java`**
-  - Expõe endpoints para registro e login:
-    - `POST /auth/register`: Registra um novo usuário.
-    - `POST /auth/login`: Gera um token JWT para o usuário.
+### Serviços (service/)
 
-### Modelos
+| Arquivo                    | Descrição                                                                                 |
+|----------------------------|---------------------------------------------------------------------------------------------|
+| AuthService.java           | Lógica de autenticação: registra usuários, valida credenciais, gera tokens via TokenService. |
+| JwtAuthenticationFilter.java | Filtro que intercepta requisições protegidas, extrai e valida JWT, autenticando o contexto. |
+| JwtSecretProvider.java     | Gera ou fornece o segredo usado para assinar os JWT.                                          |
+| TokenService.java          | Responsável por criar o JWT com claims (cnes, nomeUbs) e expiração.                        |
 
-- **`User.java`**
-  - Representa a entidade do banco de dados `users`.
-  - **Campos:**
-    - `id`: Identificador único.
-    - `nomeUbs`: Nome da unidade básica de saúde.
-    - `cnes`: Código CNES da unidade.
-    - `address`: Endereço (armazenado como hash).
+### Classe Principal (MedMapApplication.java)
 
-### Repositórios
+| Arquivo                | Descrição                                                             |
+|------------------------|---------------------------------------------------------------------|
+| MedMapApplication.java | Classe principal do projeto. Inicializa o contexto Spring Boot.     |
 
-- **`UserRepository.java`**
-  - Interface para acessar e manipular dados de usuários.
-  - Método principal: `findByNomeUbsAndCnes`.
+### Recursos de Configuração (resources/)
 
-- **`GenerateSecretKey.java`**
-  - Utilitário para gerar uma chave secreta JWT no algoritmo HS512.
+- **application.yml**: Configurações gerais do projeto, como porta do servidor, configs do JWT e do banco (em produção).
+- **application-test.properties**: Configurações específicas para testes, por exemplo, uso de H2 in-memory, desabilitando PostgreSQL.
 
-### Serviços
+### Testes (test/)
 
-- **`AuthService.java`**
-  - Contém toda a lógica de autenticação:
-    - Registro de usuários (com validação).
-    - Login (valida dados e gera token JWT).
+Cada teste valida o comportamento de seus respectivos componentes:
 
-- **`JwtAuthenticationFilter.java`**
-  - Filtro que intercepta todas as requisições e valida o token JWT no header `Authorization`.
-
-- **`GlobalExceptionHandler.java`**
-  - Lida com exceções de forma centralizada.
-  - Retorna mensagens de erro padronizadas para o cliente.
-
----
-
-## Rotas e Endpoints
-
-### Endpoints de Autenticação
-
-| Método | Endpoint         | Descrição                         |
-|---------|------------------|-----------------------------------|
-| POST    | `/auth/register` | Registra um novo usuário.         |
-| POST    | `/auth/login`    | Gera token JWT para autenticação. |
-
-### Swagger UI
-
-Documentação interativa:
-
-- URL: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+| Arquivo                          | Descrição                                                       |
+|----------------------------------|-----------------------------------------------------------------|
+| MedMapApplicationMainTest.java   | Testa o contexto da aplicação principal.                        |
+| ConfigTest.java                  | Testa se o contexto carrega as configurações corretamente.       |
+| OpenApiConfigTest.java           | Verifica se o Swagger/OpenAPI é configurado adequadamente.      |
+| AuthControllerTest.java          | Testes para as rotas de autenticação (registro/login).          |
+| GlobalExceptionHandlerTest.java  | Verifica o tratamento global de exceções.                        |
+| JwtAuthenticationFilterTest.java | Testa o filtro JWT (rotas públicas e protegidas).               |
+| UserTest.java                    | Testes da entidade User.                                         |
+| UserRepositoryTest.java          | Testa operações do repositório UserRepository.                 |
+| AuthServiceTest.java             | Testes da lógica de autenticação em AuthService.               |
+| JwtSecretProviderTest.java       | Testa o provedor de segredos JWT.                                |
+| TokenServiceTest.java            | Testa a geração de tokens JWT em TokenService.                 |
 
 ---
 
-## Requisitos do Sistema
+## Testes e Cobertura de Código
 
-- **Java**: 17 ou superior.
-- **Maven**: Para gerenciamento de dependências.
-- **PostgreSQL**: Banco de dados relacional usado no projeto.
-
----
-
-## Instruções para Execução
-
-### Clonando o Repositório
+Os testes foram executados usando JUnit e Mockito. O Jacoco é utilizado para gerar relatórios de cobertura. A cobertura ultrapassa 90%, conforme exigido. Acesse o relatório em `target/site/jacoco/index.html` após rodar:
 
 ```bash
-git clone https://github.com/DI-NS/MedMap.git
-cd MedMap
+mvn clean test
+mvn jacoco:report
 ```
 
-### Configurando o Banco de Dados
+A cobertura final é de aproximadamente 98%, superando o requisito.
 
-1. **Crie um banco no PostgreSQL:**
+## Documentação da API com Swagger/OpenAPI
 
-   ```sql
-   CREATE DATABASE medmap;
-   ```
+A configuração do OpenAPI está em `OpenApiConfig.java`. A documentação pode ser acessada nos endpoints:
 
-2. **Atualize as credenciais do banco no arquivo `application.properties` ou `application.yml`:**
+- `/v3/api-docs` para o documento JSON
+- `/swagger-ui/index.html` para a UI interativa Swagger.
 
-   ```yaml
-   spring:
-     datasource:
-       url: jdbc:postgresql://localhost:5432/medmap
-       username: <SEU_USUARIO>
-       password: <SUA_SENHA>
-   ```
+Dessa forma, é fácil explorar e testar as rotas da API.
 
-3. **Execute o script de migração ou deixe o Hibernate criar automaticamente as tabelas.**
+## Autenticação e Segurança JWT
 
-### Executando o Projeto
+- O arquivo `SecurityConfig.java` determina quais rotas são públicas ou protegidas.
+- O `JwtAuthenticationFilter.java` valida o token JWT presente no cabeçalho `Authorization: Bearer <token>` antes de permitir acesso às rotas protegidas.
+- O `AuthService.java` gera tokens JWT usando o `TokenService.java` após validar o usuário.
+- O `JwtSecretProvider.java` gerencia o segredo usado na assinatura dos tokens JWT.
 
-Compile e rode o projeto:
+As rotas `/auth/**` são públicas, permitindo registro e login. Outras rotas, como `/private/data`, requerem um token JWT válido para acesso.
 
-```bash
-mvn spring-boot:run
-```
+## CI/CD com GitHub Actions
 
-Acesse a aplicação em: [http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)
+No diretório `.github/workflows/` encontra-se o arquivo `ci.yml` que descreve o pipeline:
+
+- Build da aplicação
+- Execução dos testes
+- Cache de dependências Maven
+
+Isso garante que a aplicação seja automaticamente testada e validada em cada commit ou pull request.
+
+## Boas Práticas, SOLID e Clean Code
+
+O código segue princípios SOLID, separando responsabilidades:
+
+- **Single Responsibility**: Cada classe tem um propósito claro (Controlador só controla, Serviço só trata lógica, etc.).
+- **Open/Closed, Liskov, Interface Segregation, Dependency Inversion**: A injeção de dependência, o uso de interfaces em repositórios e a separação de camadas tornam o código extensível e fácil de manter.
+- **Clean Code**: Nomes claros, comentários explicativos, testes bem estruturados e documentação adicionada.
 
 ---
 
-## Testando a API
+## Detalhes Adicionais e Considerações
 
-### Registro de Usuário
+### Fluxo de Autenticação
 
-**Exemplo de Requisição:**
+1. **Registro (`POST /auth/register`)**:
+  - O cliente envia `nomeUbs`, `cnes`, `address`, `password`.
+  - O `AuthService` verifica se o `cnes` já existe no `UserRepository`. Caso exista, lança `UserAlreadyExistsException`.
+  - Caso contrário, a senha é codificada (`BCryptPasswordEncoder`) e o usuário é salvo.
+  - Retorna uma mensagem de sucesso.
 
-```json
-{
-  "nomeUbs": "UBS Teste",
-  "cnes": "123456",
-  "address": "Rua Exemplo, 123"
-}
-```
+   **Exemplo de Requisição:**
+   ```bash
+   curl -X POST http://localhost:8081/auth/register \
+   -H 'Content-Type: application/json' \
+   -d '{"nomeUbs":"UBS Exemplo","cnes":"123456","address":"Rua ABC","password":"minhaSenha"}'
+   ```
 
-**Resposta Esperada:**
+2. **Login (`POST /auth/login`)**:
+  - O cliente envia `cnes` e `password` como parâmetros.
+  - O `AuthService` busca o usuário por `cnes`.
+  - Verifica se a senha corresponde ao hash armazenado. Se não, lança `InvalidCredentialsException`.
+  - Em caso de sucesso, gera um token JWT com `TokenService` que inclui `cnes` no subject e `nomeUbs` como claim.
 
-```json
-{
-  "message": "UBS registrada com sucesso!"
-}
-```
+   **Exemplo de Requisição:**
+   ```bash
+   curl -X POST http://localhost:8081/auth/login \
+   -d "cnes=123456" \
+   -d "password=minhaSenha"
+   ```
 
-### Login
+   **Resposta (Exemplo):**
+   ```
+   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
+   ```
 
-**Exemplo de Requisição:**
+   Esse token deve ser usado no cabeçalho `Authorization: Bearer <token>` para acessar rotas protegidas.
 
-```json
-{
-  "nomeUbs": "UBS Teste",
-  "cnes": "123456"
-}
-```
+### Propriedades de Configuração
 
-**Resposta Esperada:**
+- `application.yml`:  incluir configurações de banco para produção apontando para Supabase e JWT expiration.
+- `application-test.properties`: Configura o uso do H2 durante os testes, garantindo isolamento do ambiente de testes.
 
-```json
-{
-  "token": "<JWT_TOKEN>"
-}
+### Integração com Outros Microserviços
+
+O MedMap pode ser integrado com microserviços de UBS e Medicamentos:
+
+- O microserviço MedMap fornece autenticação JWT. Outros microserviços podem validar o token fornecido pelo cliente (via chave compartilhada ou endpoint de validação se implementado).
+- Ao centralizar a autenticação no MedMap, os outros microserviços podem confiar nos tokens gerados e focar apenas na lógica de seus respectivos domínios.
+
+### CI/CD
+
+O arquivo `.github/workflows/ci.yml` dispara a pipeline no push ou pull request para a branch `main`.
+
+**Passos:**
+
+- Checkout do código
+- Setup do JDK 17
+- Cache do Maven
+- Build com `mvn clean install`
+
+No futuro, podem ser adicionados passos de deploy automático para um ambiente de teste ou produção.
+
+### Boas Práticas
+
+- Código organizado por camadas: controller, service, repository e model.
+- Tratamento de exceções com classes dedicadas.
+- Testes unitários para cada camada chave.
+- Uso de `@ActiveProfiles("test")` para ambientes de teste isolados.
+- Uso de JWT seguro, evitando exposição do segredo. Em produção, esse segredo deve ser armazenado em variáveis de ambiente seguras.
+
+### Exemplos de Rotas Disponíveis
+
+| Rota                    | Método | Autentic. | Descrição                                             |
+|-------------------------|---------|-----------|---------------------------------------------------------|
+| `/auth/register`        | POST    | Não       | Registra uma nova UBS, requer `nomeUbs`, `cnes`, `address`, `password` |
+| `/auth/login`           | POST    | Não       | Autentica e retorna um token JWT, requer `cnes` e `password` |
+| `/swagger-ui/index.html`| GET     | Não       | Documentação interativa da API                          |
+| `/v3/api-docs`          | GET     | Não       | Documentação OpenAPI em JSON                            |
+| `/h2-console`           | GET     | Não       | Console H2 (apenas para dev/test)                         |
+| `/private/data`         | GET     | Sim       | Exige token JWT, retorna 401 se não autenticado ou 404 se não existe. |
+
+Acima temos apenas um exemplo de rota protegida (`/private/data`).
