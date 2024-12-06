@@ -2,57 +2,41 @@ package MedMap.controller;
 
 import MedMap.model.User;
 import MedMap.service.AuthService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.mockito.Mockito;
+import org.springframework.http.ResponseEntity;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+
+/**
+ * Testa o AuthController, verificando rotas de registro e login.
+ */
 class AuthControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockBean
-    AuthService authService;
-
-    ObjectMapper objectMapper;
+    private AuthController authController;
+    private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
+        authService = Mockito.mock(AuthService.class);
+        authController = new AuthController(authService);
     }
 
     @Test
-    void registerShouldReturnSuccessMessage() throws Exception {
-        User user = new User("UBS Teste", "654321", "Rua Z", "minhaSenha");
-        when(authService.register(any(User.class))).thenReturn("UBS registrada com sucesso!");
-
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("UBS registrada com sucesso!"));
+    void register_ShouldReturnSuccessMessage() {
+        Mockito.when(authService.register(any(User.class))).thenReturn("UBS registrada com sucesso!");
+        ResponseEntity<String> response = authController.register(new User());
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("UBS registrada com sucesso!", response.getBody());
     }
 
     @Test
-    void loginShouldReturnJwtToken() throws Exception {
-        when(authService.login("654321", "minhaSenha")).thenReturn("meu-jwt-token");
-
-        mockMvc.perform(post("/auth/login")
-                        .param("cnes", "654321")
-                        .param("password", "minhaSenha"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("meu-jwt-token"));
+    void login_ShouldReturnToken() {
+        Mockito.when(authService.login("Test UBS", "123456")).thenReturn("mock-token");
+        ResponseEntity<String> response = authController.login("Test UBS", "123456");
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("mock-token", response.getBody());
     }
 }

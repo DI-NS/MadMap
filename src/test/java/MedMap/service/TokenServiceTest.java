@@ -10,9 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Base64;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testa o TokenService, garantindo que o token inclua o CNES e o nome da UBS.
+ */
 @SpringBootTest
 class TokenServiceTest {
 
@@ -36,7 +38,7 @@ class TokenServiceTest {
                 .parseClaimsJws(token)
                 .getBody();
 
-        assertEquals("654321", claims.getSubject()); // CNES do usuário
+        assertEquals("654321", claims.getSubject());
         assertEquals("UBS Teste", claims.get("nomeUbs"));
     }
 }

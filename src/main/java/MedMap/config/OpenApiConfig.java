@@ -6,15 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configurações para a documentação da API usando OpenAPI.
+ * Configurações da documentação da API usando OpenAPI/Swagger.
  */
 @Configuration
 public class OpenApiConfig {
 
     /**
-     * Configura as informações básicas da API para a documentação.
+     * Cria a configuração básica da documentação da API.
      *
-     * @return Objeto OpenAPI configurado.
+     * @return Objeto OpenAPI configurado com informações da API.
      */
     @Bean
     public OpenAPI customOpenAPI() {

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Manipula exceções lançadas pela aplicação de forma global.
+ * Tratador global de exceções, lida com exceções específicas e retorna códigos HTTP adequados.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {

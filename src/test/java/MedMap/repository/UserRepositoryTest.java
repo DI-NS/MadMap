@@ -11,6 +11,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Testa o UserRepository, verificando busca por CNES.
+ */
 @DataJpaTest
 class UserRepositoryTest {
 

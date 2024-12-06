@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.Base64;
 
 /**
- * Provedor do segredo usado para assinar tokens JWT.
+ * Fornecedor do segredo JWT. Se não for fornecido via configuração, gera um segredo novo.
  */
 @Component
 public class JwtSecretProvider {
